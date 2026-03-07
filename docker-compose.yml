@@ -44,8 +44,8 @@ services:
       JWT_EXPIRES_IN: 24h
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: 587
-      MAIL_USER: ""
-      MAIL_PASS: ""
+      MAIL_USER: your_email@gmail.com
+      MAIL_PASS: your_app_password
     depends_on:
       db:
         condition: service_healthy
