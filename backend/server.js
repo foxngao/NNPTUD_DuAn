@@ -1,6 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+<<<<<<< HEAD
+=======
+const path = require('path');
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 
 const app = express();
 
@@ -9,6 +13,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+<<<<<<< HEAD
+=======
+// Serve uploaded images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 // Database connection (triggers connection test)
 require('./src/config/db');
 
@@ -24,6 +34,12 @@ app.use('/api/v1/cart', require('./src/routes/cart.routes'));
 app.use('/api/v1/orders', require('./src/routes/order.routes'));
 app.use('/api/v1/admin', require('./src/routes/admin.routes'));
 app.use('/api/v1/notifications', require('./src/routes/notification.routes'));
+<<<<<<< HEAD
+=======
+app.use('/api/v1/vin', require('./src/routes/vin.routes'));
+app.use('/api/v1/search', require('./src/routes/imageSearch.routes'));
+app.use('/api/v1/search-history', require('./src/routes/searchHistory.routes'));
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 
 // Health check
 app.get('/', (req, res) => {

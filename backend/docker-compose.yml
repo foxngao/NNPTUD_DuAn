@@ -62,6 +62,10 @@ services:
       MAIL_PORT: 587
       MAIL_USER: minhtienst00@gmail.com
       MAIL_PASS: wgch isop womj fjki
+<<<<<<< HEAD
+=======
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
     depends_on:
       db:
         condition: service_healthy

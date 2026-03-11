@@ -1,5 +1,6 @@
 const db = require('../config/db');
 
+<<<<<<< HEAD
 // GET /api/v1/parts/search?keyword=...&model_year_id=...&category_id=...&page=1&limit=10
 const searchParts = async (req, res) => {
   try {
@@ -7,6 +8,21 @@ const searchParts = async (req, res) => {
     const offset = (page - 1) * limit;
     let where = [];
     let params = [];
+=======
+// GET /api/v1/parts/search?keyword=...&model_year_id=...&category_id=...&min_price=...&max_price=...&brand_id=...&year=...&sort_by=...&sort_order=...&page=1&limit=10
+const searchParts = async (req, res) => {
+  try {
+    const { 
+      keyword, model_year_id, category_id, 
+      min_price, max_price, brand_id, year,
+      sort_by = 'name', sort_order = 'asc',
+      page = 1, limit = 10 
+    } = req.query;
+    const offset = (page - 1) * limit;
+    let where = [];
+    let params = [];
+    let needCompatibilityJoin = false;
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 
     if (keyword) {
       where.push('(p.name LIKE ? OR p.description LIKE ?)');
@@ -16,6 +32,10 @@ const searchParts = async (req, res) => {
     if (model_year_id) {
       where.push('pc.model_year_id = ?');
       params.push(model_year_id);
+<<<<<<< HEAD
+=======
+      needCompatibilityJoin = true;
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
     }
 
     if (category_id) {
@@ -23,11 +43,54 @@ const searchParts = async (req, res) => {
       params.push(category_id);
     }
 
+<<<<<<< HEAD
     const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
 
     const joinClause = model_year_id
       ? 'JOIN part_compatibility pc ON p.id = pc.part_id'
       : 'LEFT JOIN part_compatibility pc ON p.id = pc.part_id';
+=======
+    // Lọc theo khoảng giá
+    if (min_price) {
+      where.push('p.price >= ?');
+      params.push(parseFloat(min_price));
+    }
+    if (max_price) {
+      where.push('p.price <= ?');
+      params.push(parseFloat(max_price));
+    }
+
+    // Lọc theo hãng xe (brand_id)
+    if (brand_id) {
+      where.push('cm.brand_id = ?');
+      params.push(parseInt(brand_id));
+      needCompatibilityJoin = true;
+    }
+
+    // Lọc theo năm sản xuất
+    if (year) {
+      where.push('my.year = ?');
+      params.push(parseInt(year));
+      needCompatibilityJoin = true;
+    }
+
+    const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
+
+    // Xây dựng JOIN clause dựa trên filters
+    let joinClause = '';
+    if (needCompatibilityJoin) {
+      joinClause = `JOIN part_compatibility pc ON p.id = pc.part_id
+                     JOIN model_years my ON pc.model_year_id = my.id
+                     JOIN car_models cm ON my.model_id = cm.id`;
+    } else {
+      joinClause = 'LEFT JOIN part_compatibility pc ON p.id = pc.part_id';
+    }
+
+    // Xây dựng ORDER BY
+    const validSortFields = { name: 'p.name', price: 'p.price', created_at: 'p.created_at', stock: 'p.stock_quantity' };
+    const sortField = validSortFields[sort_by] || 'p.name';
+    const sortDir = sort_order.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 
     // Count total
     const [countResult] = await db.query(
@@ -36,14 +99,29 @@ const searchParts = async (req, res) => {
     );
     const total = countResult[0].total;
 
+<<<<<<< HEAD
+=======
+    // Bổ sung JOIN model_years/car_models cho LEFT JOIN case nếu cần
+    let selectJoin = joinClause;
+    if (!needCompatibilityJoin) {
+      selectJoin = 'LEFT JOIN part_compatibility pc ON p.id = pc.part_id';
+    }
+
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
     // Get paginated results
     const [parts] = await db.query(
       `SELECT DISTINCT p.*, c.name as category_name
        FROM parts p
        JOIN categories c ON p.category_id = c.id
+<<<<<<< HEAD
        ${joinClause}
        ${whereClause}
        ORDER BY p.name
+=======
+       ${selectJoin}
+       ${whereClause}
+       ORDER BY ${sortField} ${sortDir}
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
        LIMIT ? OFFSET ?`,
       [...params, parseInt(limit), parseInt(offset)]
     );
@@ -64,6 +142,66 @@ const searchParts = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
+=======
+// GET /api/v1/parts/suggestions?q=... - Gợi ý tìm kiếm realtime
+const getSuggestions = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.trim().length < 1) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const keyword = q.trim();
+
+    // Tìm gợi ý từ tên sản phẩm
+    const [partSuggestions] = await db.query(
+      `SELECT DISTINCT p.id, p.name, p.price, p.image_url, c.name as category_name, 'part' as type
+       FROM parts p
+       JOIN categories c ON p.category_id = c.id
+       WHERE p.name LIKE ? OR p.description LIKE ?
+       ORDER BY 
+         CASE WHEN p.name LIKE ? THEN 0 ELSE 1 END,
+         p.name
+       LIMIT 6`,
+      [`%${keyword}%`, `%${keyword}%`, `${keyword}%`]
+    );
+
+    // Tìm gợi ý từ danh mục
+    const [categorySuggestions] = await db.query(
+      `SELECT id, name, 'category' as type
+       FROM categories
+       WHERE name LIKE ?
+       ORDER BY name
+       LIMIT 3`,
+      [`%${keyword}%`]
+    );
+
+    // Tìm gợi ý từ hãng xe
+    const [brandSuggestions] = await db.query(
+      `SELECT id, name, country, 'brand' as type
+       FROM brands
+       WHERE name LIKE ?
+       ORDER BY name
+       LIMIT 3`,
+      [`%${keyword}%`]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        parts: partSuggestions,
+        categories: categorySuggestions,
+        brands: brandSuggestions
+      }
+    });
+  } catch (error) {
+    console.error('Get suggestions error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 // GET /api/v1/parts/:id
 const getPartById = async (req, res) => {
   try {
@@ -105,6 +243,10 @@ const getPartById = async (req, res) => {
 const createPart = async (req, res) => {
   try {
     const { category_id, name, description, price, stock_quantity, image_url } = req.body;
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
     const [result] = await db.query(
       'INSERT INTO parts (category_id, name, description, price, stock_quantity, image_url) VALUES (?, ?, ?, ?, ?, ?)',
       [category_id, name, description, price, stock_quantity, image_url]
@@ -124,6 +266,10 @@ const createPart = async (req, res) => {
 const updatePart = async (req, res) => {
   try {
     const { category_id, name, description, price, stock_quantity, image_url } = req.body;
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
     const [result] = await db.query(
       'UPDATE parts SET category_id = ?, name = ?, description = ?, price = ?, stock_quantity = ?, image_url = ? WHERE id = ?',
       [category_id, name, description, price, stock_quantity, image_url, req.params.id]
@@ -179,4 +325,8 @@ const addCompatibility = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 module.exports = { searchParts, getPartById, createPart, updatePart, deletePart, addCompatibility };
+=======
+module.exports = { searchParts, getSuggestions, getPartById, createPart, updatePart, deletePart, addCompatibility };
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f

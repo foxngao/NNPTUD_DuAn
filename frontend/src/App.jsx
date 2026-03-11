@@ -22,6 +22,10 @@ import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
 import OrderDetail from './pages/OrderDetail';
 import Profile from './pages/Profile';
+<<<<<<< HEAD
+=======
+import SearchHistory from './pages/SearchHistory';
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 
 // Admin pages
 import AdminLayout from './pages/Admin/AdminLayout';
@@ -114,6 +118,17 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+<<<<<<< HEAD
+=======
+          <Route
+            path="/search-history"
+            element={
+              <ProtectedRoute>
+                <SearchHistory />
+              </ProtectedRoute>
+            }
+          />
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 
           {/* Admin routes */}
           <Route

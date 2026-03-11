@@ -3,6 +3,10 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import cartApi from '../../api/cartApi';
 import notificationApi from '../../api/notificationApi';
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 import { 
   ShoppingCart, 
   User, 
@@ -13,7 +17,10 @@ import {
   ShieldCheck,
   Package,
   Bell,
+<<<<<<< HEAD
   Search,
+=======
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
   Menu,
   X,
   Heart,
@@ -28,7 +35,12 @@ import {
   CheckCircle,
   Truck,
   CreditCard,
+<<<<<<< HEAD
   XCircle
+=======
+  XCircle,
+  Car
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -45,7 +57,11 @@ const Header = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
+<<<<<<< HEAD
   const [searchQuery, setSearchQuery] = useState('');
+=======
+
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 
   // Debug log
   console.log('Header - Auth State:', { 
@@ -233,6 +249,7 @@ const Header = () => {
     toast.success('Đăng xuất thành công');
   };
 
+<<<<<<< HEAD
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -240,6 +257,9 @@ const Header = () => {
       setIsMobileMenuOpen(false);
     }
   };
+=======
+
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 
   const navLinks = [
     { path: '/', label: 'TRANG CHỦ', icon: Home },
@@ -293,7 +313,10 @@ const Header = () => {
 
         {/* Actions Area */}
         <div className="flex items-center gap-3">
+<<<<<<< HEAD
           
+=======
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 
           {isAuthenticated ? (
             <>
@@ -503,6 +526,18 @@ const Header = () => {
                     </Link>
 
                     <Link
+<<<<<<< HEAD
+=======
+                      to="/search-history"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors"
+                    >
+                      <Clock size={18} />
+                      <span className="font-medium">Lịch sử tìm kiếm</span>
+                    </Link>
+
+                    <Link
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
                       to="/wishlist"
                       onClick={() => setIsUserDropdownOpen(false)}
                       className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors lg:hidden"

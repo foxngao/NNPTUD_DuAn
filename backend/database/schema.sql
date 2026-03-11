@@ -147,4 +147,30 @@ CREATE TABLE IF NOT EXISTS order_items (
   price_at_purchase DECIMAL(12, 2) NOT NULL,
   FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
   FOREIGN KEY (part_id) REFERENCES parts(id) ON DELETE CASCADE
+<<<<<<< HEAD
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+=======
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Bảng ánh xạ VIN prefix → brand (WMI: 3 ký tự đầu)
+CREATE TABLE vin_wmi_mappings (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  wmi_code VARCHAR(3) NOT NULL UNIQUE,  -- 3 ký tự đầu VIN
+  brand_id INT NOT NULL,
+  country VARCHAR(100),
+  FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE CASCADE
+);
+
+-- Lịch sử tìm kiếm
+CREATE TABLE search_history (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  search_type ENUM('keyword','vin','image','filter') DEFAULT 'keyword',
+  query VARCHAR(500) NOT NULL,
+  filters JSON DEFAULT NULL,
+  results_count INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_user_created (user_id, created_at)
+);
+>>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
