@@ -1,22 +1,4 @@
 import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD
-import { useSearchParams } from 'react-router-dom';
-import ProductCard from '../components/common/ProductCard';
-import productApi from '../api/productApi';
-import { Search, Filter, X } from 'lucide-react';
-
-const SearchResults = () => {
-  const [searchParams] = useSearchParams();
-  const [parts, setParts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 12,
-    total: 0,
-    totalPages: 0,
-  });
-=======
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ProductCard from '../components/common/ProductCard';
@@ -34,39 +16,26 @@ const SearchResults = () => {
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('keyword'); // keyword, vin, image
+  const [activeTab, setActiveTab] = useState('keyword');
   const [pagination, setPagination] = useState({
     page: 1, limit: 12, total: 0, totalPages: 0,
   });
-  
+
   // Filters
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
   const [filters, setFilters] = useState({
     keyword: searchParams.get('keyword') || '',
     model_year_id: searchParams.get('model_year_id') || '',
     category_id: '',
-<<<<<<< HEAD
-=======
     min_price: '',
     max_price: '',
     brand_id: '',
     year: '',
     sort_by: 'name',
     sort_order: 'asc',
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
     page: 1,
     limit: 12,
   });
 
-<<<<<<< HEAD
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    fetchParts();
-  }, [filters]);
-=======
   // VIN search
   const vinParam = searchParams.get('vin');
   const [vinParts, setVinParts] = useState([]);
@@ -96,7 +65,6 @@ const SearchResults = () => {
       fetchParts();
     }
   }, [filters, activeTab]);
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 
   const fetchCategories = async () => {
     try {
@@ -107,8 +75,6 @@ const SearchResults = () => {
     }
   };
 
-<<<<<<< HEAD
-=======
   const fetchBrands = async () => {
     try {
       const res = await productApi.getBrands();
@@ -118,7 +84,6 @@ const SearchResults = () => {
     }
   };
 
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
   const fetchParts = async () => {
     setLoading(true);
     try {
@@ -128,10 +93,7 @@ const SearchResults = () => {
       const res = await productApi.search(params);
       setParts(res.data.data);
       setPagination(res.data.pagination);
-<<<<<<< HEAD
-=======
 
-      // Lưu lịch sử tìm kiếm
       if (isAuthenticated && filters.keyword) {
         try {
           await searchHistoryApi.save({
@@ -142,7 +104,6 @@ const SearchResults = () => {
           });
         } catch {}
       }
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
     } catch (error) {
       console.error('Failed to fetch parts:', error);
     } finally {
@@ -150,8 +111,6 @@ const SearchResults = () => {
     }
   };
 
-<<<<<<< HEAD
-=======
   const searchVinParts = async (vin) => {
     setVinLoading(true);
     try {
@@ -159,7 +118,6 @@ const SearchResults = () => {
       setVinParts(res.data.data.parts || []);
       setVinDecoded(res.data.data.decoded);
 
-      // Lưu lịch sử
       if (isAuthenticated) {
         try {
           await searchHistoryApi.save({
@@ -176,24 +134,15 @@ const SearchResults = () => {
     }
   };
 
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
   };
 
   const clearFilters = () => {
     setFilters({
-<<<<<<< HEAD
-      keyword: '',
-      model_year_id: '',
-      category_id: '',
-      page: 1,
-      limit: 12,
-=======
       keyword: '', model_year_id: '', category_id: '',
       min_price: '', max_price: '', brand_id: '', year: '',
       sort_by: 'name', sort_order: 'asc', page: 1, limit: 12,
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
     });
   };
 
@@ -202,9 +151,6 @@ const SearchResults = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-<<<<<<< HEAD
-  const hasActiveFilters = filters.keyword || filters.model_year_id || filters.category_id;
-=======
   const handleSortChange = (value) => {
     const [sort_by, sort_order] = value.split('_');
     setFilters(prev => ({ ...prev, sort_by: sort_by || 'name', sort_order: sort_order || 'asc', page: 1 }));
@@ -215,7 +161,6 @@ const SearchResults = () => {
   const currentParts = activeTab === 'vin' ? vinParts : activeTab === 'image' ? imageParts : parts;
   const currentLoading = activeTab === 'vin' ? vinLoading : activeTab === 'image' ? imageLoading : loading;
 
-  // Tạo danh sách năm
   const years = [];
   for (let y = 2030; y >= 2018; y--) years.push(y);
 
@@ -224,84 +169,11 @@ const SearchResults = () => {
     { id: 'vin', label: 'Tra cứu VIN', icon: Hash },
     { id: 'image', label: 'Tìm bằng ảnh', icon: Camera },
   ];
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
 
   return (
     <div className="min-h-screen bg-slate-50 pt-32 pb-20 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-<<<<<<< HEAD
-        <div className="mb-10">
-          <h1 className="text-3xl font-black text-slate-900 mb-2">KẾT QUẢ TÌM KIẾM</h1>
-          <p className="text-slate-500">
-            {pagination.total > 0 
-              ? `Tìm thấy ${pagination.total} sản phẩm phù hợp`
-              : 'Không tìm thấy sản phẩm nào'}
-          </p>
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-10">
-          <div className="flex items-center gap-4 mb-4">
-            <Filter size={20} className="text-blue-600" />
-            <h2 className="font-bold text-slate-800">Bộ lọc</h2>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="text-sm text-red-500 flex items-center gap-1 hover:text-red-600"
-              >
-                <X size={16} /> Xóa bộ lọc
-              </button>
-            )}
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            {/* Search input */}
-            <div className="relative">
-              <Search className="absolute left-4 top-3.5 text-slate-400" size={20} />
-              <input
-                type="text"
-                placeholder="Tìm kiếm sản phẩm..."
-                value={filters.keyword}
-                onChange={(e) => handleFilterChange('keyword', e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Category filter */}
-            <select
-              value={filters.category_id}
-              onChange={(e) => handleFilterChange('category_id', e.target.value)}
-              className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Tất cả danh mục</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-
-            {/* Sort (có thể thêm sau) */}
-            <select className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">Sắp xếp: Mặc định</option>
-              <option value="price_asc">Giá: Thấp đến cao</option>
-              <option value="price_desc">Giá: Cao đến thấp</option>
-              <option value="name_asc">Tên: A-Z</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Results */}
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-          </div>
-        ) : parts.length > 0 ? (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {parts.map((part) => (
-=======
         <div className="mb-8">
           <h1 className="text-3xl font-black text-slate-900 mb-2">TÌM KIẾM PHỤ TÙNG</h1>
           <p className="text-slate-500">
@@ -339,7 +211,7 @@ const SearchResults = () => {
 
         {activeTab === 'image' && (
           <div className="mb-8">
-            <ImageSearch 
+            <ImageSearch
               onSearchStart={() => setImageLoading(true)}
               onSearchResults={(results) => {
                 setImageParts(results);
@@ -421,59 +293,32 @@ const SearchResults = () => {
               {showAdvancedFilters && (
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <div className="grid md:grid-cols-4 gap-4">
-                    {/* Giá min */}
                     <div className="relative">
                       <DollarSign className="absolute left-4 top-3.5 text-slate-400" size={20} />
-                      <input
-                        type="number"
-                        placeholder="Giá từ..."
-                        value={filters.min_price}
+                      <input type="number" placeholder="Giá từ..." value={filters.min_price}
                         onChange={(e) => handleFilterChange('min_price', e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
-                        min="0"
-                      />
+                        className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" min="0" />
                     </div>
-
-                    {/* Giá max */}
                     <div className="relative">
                       <DollarSign className="absolute left-4 top-3.5 text-slate-400" size={20} />
-                      <input
-                        type="number"
-                        placeholder="Giá đến..."
-                        value={filters.max_price}
+                      <input type="number" placeholder="Giá đến..." value={filters.max_price}
                         onChange={(e) => handleFilterChange('max_price', e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
-                        min="0"
-                      />
+                        className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" min="0" />
                     </div>
-
-                    {/* Hãng xe */}
                     <div className="relative">
                       <Car className="absolute left-4 top-3.5 text-slate-400" size={20} />
-                      <select
-                        value={filters.brand_id}
-                        onChange={(e) => handleFilterChange('brand_id', e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                      >
+                      <select value={filters.brand_id} onChange={(e) => handleFilterChange('brand_id', e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
                         <option value="">Tất cả hãng xe</option>
-                        {brands.map((b) => (
-                          <option key={b.id} value={b.id}>{b.name}</option>
-                        ))}
+                        {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                       </select>
                     </div>
-
-                    {/* Năm SX */}
                     <div className="relative">
                       <Calendar className="absolute left-4 top-3.5 text-slate-400" size={20} />
-                      <select
-                        value={filters.year}
-                        onChange={(e) => handleFilterChange('year', e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                      >
+                      <select value={filters.year} onChange={(e) => handleFilterChange('year', e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
                         <option value="">Tất cả năm</option>
-                        {years.map(y => (
-                          <option key={y} value={y}>{y}</option>
-                        ))}
+                        {years.map(y => <option key={y} value={y}>{y}</option>)}
                       </select>
                     </div>
                   </div>
@@ -513,92 +358,34 @@ const SearchResults = () => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {currentParts.map((part) => (
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
                 <ProductCard key={part.id} part={part} />
               ))}
             </div>
 
-<<<<<<< HEAD
-            {/* Pagination */}
-            {pagination.totalPages > 1 && (
-=======
             {/* Pagination (only for keyword tab) */}
             {activeTab === 'keyword' && pagination.totalPages > 1 && (
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
               <div className="flex justify-center gap-2 mt-12">
-                <button
-                  onClick={() => handlePageChange(pagination.page - 1)}
-                  disabled={pagination.page <= 1}
-<<<<<<< HEAD
-                  className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-current"
-                >
-                  ←
-                </button>
-                
-                {[...Array(pagination.totalPages)].map((_, i) => (
-                  <button
-                    key={i + 1}
-                    onClick={() => handlePageChange(i + 1)}
-                    className={`w-10 h-10 rounded-xl border ${
-                      pagination.page === i + 1
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'border-slate-200 hover:bg-slate-100'
-                    } transition-colors`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                
-                <button
-                  onClick={() => handlePageChange(pagination.page + 1)}
-                  disabled={pagination.page >= pagination.totalPages}
-                  className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-current"
-                >
-                  →
-                </button>
-=======
-                  className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors disabled:opacity-50"
-                >←</button>
+                <button onClick={() => handlePageChange(pagination.page - 1)} disabled={pagination.page <= 1}
+                  className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors disabled:opacity-50">←</button>
                 {[...Array(Math.min(pagination.totalPages, 7))].map((_, i) => {
                   let pageNum;
-                  if (pagination.totalPages <= 7) {
-                    pageNum = i + 1;
-                  } else if (pagination.page <= 4) {
-                    pageNum = i + 1;
-                  } else if (pagination.page >= pagination.totalPages - 3) {
-                    pageNum = pagination.totalPages - 6 + i;
-                  } else {
-                    pageNum = pagination.page - 3 + i;
-                  }
+                  if (pagination.totalPages <= 7) pageNum = i + 1;
+                  else if (pagination.page <= 4) pageNum = i + 1;
+                  else if (pagination.page >= pagination.totalPages - 3) pageNum = pagination.totalPages - 6 + i;
+                  else pageNum = pagination.page - 3 + i;
                   return (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={`w-10 h-10 rounded-xl border ${
-                        pagination.page === pageNum
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'border-slate-200 hover:bg-slate-100'
-                      } transition-colors`}
-                    >{pageNum}</button>
+                    <button key={pageNum} onClick={() => handlePageChange(pageNum)}
+                      className={`w-10 h-10 rounded-xl border ${pagination.page === pageNum ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-200 hover:bg-slate-100'} transition-colors`}>
+                      {pageNum}
+                    </button>
                   );
                 })}
-                <button
-                  onClick={() => handlePageChange(pagination.page + 1)}
-                  disabled={pagination.page >= pagination.totalPages}
-                  className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors disabled:opacity-50"
-                >→</button>
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
+                <button onClick={() => handlePageChange(pagination.page + 1)} disabled={pagination.page >= pagination.totalPages}
+                  className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors disabled:opacity-50">→</button>
               </div>
             )}
           </>
         ) : (
-<<<<<<< HEAD
-          <div className="text-center py-20">
-            <div className="text-slate-300 text-6xl mb-4">🔍</div>
-            <h3 className="text-xl font-bold text-slate-700 mb-2">Không tìm thấy sản phẩm</h3>
-            <p className="text-slate-500">Thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc</p>
-          </div>
-=======
           activeTab !== 'image' && (
             <div className="text-center py-20">
               <div className="text-slate-300 text-6xl mb-4">🔍</div>
@@ -606,7 +393,6 @@ const SearchResults = () => {
               <p className="text-slate-500">Thử tìm kiếm với từ khóa khác hoặc điều chỉnh bộ lọc</p>
             </div>
           )
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
         )}
       </div>
     </div>
