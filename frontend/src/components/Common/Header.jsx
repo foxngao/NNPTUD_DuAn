@@ -28,7 +28,8 @@ import {
   CheckCircle,
   Truck,
   CreditCard,
-  XCircle
+  XCircle,
+  GitCompareArrows
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -46,6 +47,25 @@ const Header = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [compareCount, setCompareCount] = useState(0);
+
+  // Track compare count from localStorage
+  useEffect(() => {
+    const updateCompareCount = () => {
+      try {
+        const saved = localStorage.getItem('compareIds');
+        const ids = saved ? JSON.parse(saved) : [];
+        setCompareCount(ids.length);
+      } catch (e) { setCompareCount(0); }
+    };
+    updateCompareCount();
+    window.addEventListener('compareUpdate', updateCompareCount);
+    window.addEventListener('storage', updateCompareCount);
+    return () => {
+      window.removeEventListener('compareUpdate', updateCompareCount);
+      window.removeEventListener('storage', updateCompareCount);
+    };
+  }, []);
 
   // Debug log
   console.log('Header - Auth State:', { 
@@ -244,6 +264,7 @@ const Header = () => {
   const navLinks = [
     { path: '/', label: 'TRANG CHỦ', icon: Home },
     { path: '/search', label: 'SẢN PHẨM', icon: Package },
+    { path: '/compare', label: 'SO SÁNH', icon: GitCompareArrows, badge: compareCount },
     { path: '/about', label: 'GIỚI THIỆU', icon: Info },
     { path: '/contact', label: 'LIÊN HỆ', icon: Phone },
   ];
@@ -269,12 +290,17 @@ const Header = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`font-bold hover:text-blue-600 transition-colors flex items-center gap-1 ${
+                className={`font-bold hover:text-blue-600 transition-colors flex items-center gap-1 relative ${
                   location.pathname === link.path ? 'text-blue-600' : 'text-slate-600'
                 }`}
               >
                 <Icon size={16} />
                 {link.label}
+                {link.badge > 0 && (
+                  <span className="absolute -top-2 -right-3 min-w-[18px] h-[18px] bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                    {link.badge}
+                  </span>
+                )}
               </Link>
             );
           })}

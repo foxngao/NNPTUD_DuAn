@@ -13,6 +13,7 @@ import SearchResults from './pages/SearchResults';
 import ProductDetail from './pages/ProductDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import Compare from './pages/Compare';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 
@@ -70,6 +71,7 @@ function AppContent() {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/compare" element={<Compare />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 

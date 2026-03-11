@@ -148,3 +148,32 @@ CREATE TABLE IF NOT EXISTS order_items (
   FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
   FOREIGN KEY (part_id) REFERENCES parts(id) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- ========== SPECIFICATIONS ==========
+
+CREATE TABLE IF NOT EXISTS part_specifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  part_id INT NOT NULL,
+  spec_name NVARCHAR(100) NOT NULL,
+  spec_value NVARCHAR(255) NOT NULL,
+  spec_unit NVARCHAR(50) DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (part_id) REFERENCES parts(id) ON DELETE CASCADE,
+  INDEX idx_part_spec (part_id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- ========== REVIEWS ==========
+
+CREATE TABLE IF NOT EXISTS part_reviews (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  part_id INT NOT NULL,
+  user_id INT NOT NULL,
+  rating TINYINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  comment NVARCHAR(1000) DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (part_id) REFERENCES parts(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_user_part_review (user_id, part_id),
+  INDEX idx_part_rating (part_id, rating)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

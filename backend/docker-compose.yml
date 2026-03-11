@@ -47,6 +47,10 @@ services:
       dockerfile: Dockerfile
     container_name: car_parts_api
     restart: unless-stopped
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npx nodemon server.js
     ports:
       - "3000:3000"
     environment:
