@@ -82,8 +82,7 @@ const searchByImage = async (req, res) => {
           ];
 
           const prompt = `Bạn là một chuyên gia về phụ tùng ô tô. 
-Nhiệm vụ: Nhận dạng phụ tùng ô tô trong ảnh và trả về một vài từ khóa tiếng Việt ngắn gọn, cách nhau bằng dấu phẩy mô tả loại phụ tùng hoặc thương hiệu trong ảnh (ví dụ: lốp xe, đèn pha, gương chiếu hậu, mâm đúc, tay nắm cửa, Toyota, Michelin...).
-
+Nhiệm vụ: Nhận dạng phụ tùng ô tô trong ảnh và trả về một vài từ khóa tiếng Việt ngắn gọn, cách nhau bằng dấu phẩy mô tả loại phụ tùng hoặc thương hiệu trong ảnh.(ví dụ: lốp xe, đèn pha, gương chiếu hậu, mâm đúc, tay nắm cửa, Toyota, Michelin...).
 Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json) theo đúng định dạng sau (chỉ bao gồm các từ khóa bạn nhận diện được):
 {"keywords": "từ khóa 1, từ khóa 2"}`;
 
@@ -166,21 +165,21 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
           scoreParams.push(`%${phrase}%`, `%${phrase}%`);
         });
       }
-      
+
       // Khai thác thêm cách cắt chữ rời rạc để tăng độ phủ (nếu không tìm thấy phrase)
       const words = description.replace(/[.,;:]/g, ' ').split(/\s+/).filter(w => w.length >= 2);
       if (words.length > 0) {
-          words.forEach(() => {
-            searchConditions.push('(p.name LIKE ? OR p.description LIKE ?)');
-          });
+        words.forEach(() => {
+          searchConditions.push('(p.name LIKE ? OR p.description LIKE ?)');
+        });
 
-          words.forEach(word => {
-            whereParams.push(`%${word}%`, `%${word}%`);
+        words.forEach(word => {
+          whereParams.push(`%${word}%`, `%${word}%`);
 
-            // Lower relevance score for partial word match
-            relevanceCases.push('(CASE WHEN p.name LIKE ? THEN 2 ELSE 0 END) + (CASE WHEN p.description LIKE ? THEN 1 ELSE 0 END)');
-            scoreParams.push(`%${word}%`, `%${word}%`);
-          });
+          // Lower relevance score for partial word match
+          relevanceCases.push('(CASE WHEN p.name LIKE ? THEN 2 ELSE 0 END) + (CASE WHEN p.description LIKE ? THEN 1 ELSE 0 END)');
+          scoreParams.push(`%${word}%`, `%${word}%`);
+        });
       }
     }
 
@@ -241,7 +240,7 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
         ) as subquery
       `;
       // Score params need to be before finalWhereParams in the subquery
-      countParams = [...scoreParams, ...finalWhereParams, ...scoreParams];
+      countParams = [...scoreParams, ...finalWhereParams];
     }
 
     const [countResult] = await db.query(countQuery, countParams);
