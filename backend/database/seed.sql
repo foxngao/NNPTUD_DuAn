@@ -150,9 +150,6 @@ INSERT IGNORE INTO part_compatibility (part_id, model_year_id) VALUES
 (11, 14), (11, 15),
 (12, 1), (12, 2), (12, 4), (12, 5), (12, 8), (12, 9),
 (13, 1), (13, 2), (13, 3), (13, 6), (13, 7),
-<<<<<<< HEAD
-(14, 6), (14, 7);
-=======
 (14, 6), (14, 7);
 
 -- ========== VIN WMI MAPPINGS ==========
@@ -183,4 +180,3 @@ INSERT IGNORE INTO vin_wmi_mappings (wmi_code, brand_id, country) VALUES
 ('JM1', 7, 'Japan'), ('JM3', 7, 'Japan'), ('JM6', 7, 'Japan'), ('JM7', 7, 'Japan'),
 -- Kia (brand_id = 8)
 ('KNA', 8, 'South Korea'), ('KND', 8, 'South Korea'), ('5XX', 8, 'USA');
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f

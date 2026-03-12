@@ -85,7 +85,7 @@ const searchByImage = async (req, res) => {
           // Lấy nhanh danh sách ID và Tên sản phẩm hiện có
           const [allParts] = await db.query('SELECT id, name FROM parts');
           let partsListText = allParts.map(p => `ID: ${p.id} - ${p.name}`).join('\n');
-          
+
           // Đề phòng danh sách quá dài gây lỗi API, giới hạn số lượng ký tự (~ 500 parts)
           if (partsListText.length > 25000) {
             partsListText = partsListText.substring(0, 25000) + '\n...';
@@ -102,12 +102,12 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
 
           const result = await model.generateContent([prompt, ...imageParts]);
           const responseText = await result.response.text();
-          
+
           try {
             // Cố gắng parse JSON từ chuỗi kết quả
             const cleanJsonText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
             const aiData = JSON.parse(cleanJsonText);
-            
+
             aiKeywords = aiData.keywords || '';
             if (Array.isArray(aiData.matched_ids)) {
               matchedProductIds = aiData.matched_ids.map(id => parseInt(id)).filter(id => !isNaN(id));
@@ -135,7 +135,7 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
     let whereParams = [];
     let relevanceCases = [];
     let scoreParams = [];
-    
+
     // 1. Image name matching (high priority)
     let originalNameBase = '';
     let nameKeywords = [];
@@ -143,7 +143,7 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
       originalNameBase = path.parse(req.file.originalname).name;
       // Tách tên file thành các từ khóa (loại bỏ số, dấu gạch ngang, gạch dưới)
       nameKeywords = originalNameBase.split(/[-_\s]+/).filter(k => k.length >= 3);
-      
+
       console.log('Original image name:', originalNameBase);
       console.log('Image name keywords:', nameKeywords);
 
@@ -151,51 +151,51 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
         nameKeywords.forEach(kw => {
           searchConditions.push('(p.image_url LIKE ?)');
           whereParams.push(`%${kw}%`);
-          
+
           relevanceCases.push('(CASE WHEN p.image_url LIKE ? THEN 50 ELSE 0 END)');
           scoreParams.push(`%${kw}%`);
         });
       } else if (originalNameBase.length >= 3) {
         searchConditions.push('(p.image_url LIKE ?)');
         whereParams.push(`%${originalNameBase}%`);
-        
+
         relevanceCases.push('(CASE WHEN p.image_url LIKE ? THEN 100 ELSE 0 END)');
         scoreParams.push(`%${originalNameBase}%`);
       }
     }
-    
+
     // 2. AI keywords matching
     if (description.trim()) {
       const cleanDesc = description.replace(/[.,;:]/g, ' ');
       const keywords = cleanDesc.trim().split(/\s+/).filter(k => k.length >= 2);
-      
+
       if (keywords.length > 0) {
         keywords.forEach(() => {
           searchConditions.push('(p.name LIKE ? OR p.description LIKE ?)');
         });
-        
+
         keywords.forEach(kw => {
           whereParams.push(`%${kw}%`, `%${kw}%`);
-          
+
           relevanceCases.push('(CASE WHEN p.name LIKE ? THEN 2 ELSE 0 END) + (CASE WHEN p.description LIKE ? THEN 1 ELSE 0 END)');
           scoreParams.push(`%${kw}%`, `%${kw}%`);
         });
       }
     }
-    
+
     // 3. AI Exact Matched IDs
     if (matchedProductIds.length > 0) {
       // Create a condition for matching the ID
       const idPlaceholders = matchedProductIds.map(() => '?').join(',');
-      
+
       // Nếu có ID khớp chính xác, TẮT việc tìm kiếm bằng keyword để loại bỏ các sản phẩm không liên quan
       searchConditions = [`(p.id IN (${idPlaceholders}))`];
       whereParams = [...matchedProductIds];
-      
+
       relevanceCases = [`(CASE WHEN p.id IN (${idPlaceholders}) THEN 1000 ELSE 0 END)`];
       scoreParams = [...matchedProductIds];
     }
-    
+
     // Nếu cả ảnh lẫn AI đều ko lấy được thông tin gì 
     if (searchConditions.length === 0) {
       return res.json({
@@ -211,11 +211,11 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
 
     let finalWhere = [];
     let finalWhereParams = [];
-    
+
     // Gom nhóm tất cả keyword/image name vào 1 khối OR
     finalWhere.push(`(${searchConditions.join(' OR ')})`);
     finalWhereParams.push(...whereParams);
-    
+
     // Lọc theo danh mục bộ lọc (phải là AND)
     if (category_id) {
       finalWhere.push('p.category_id = ?');
@@ -224,16 +224,16 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
 
     const finalWhereClause = `WHERE ${finalWhere.join(' AND ')}`;
 
-    const relevanceSelect = relevanceCases.length > 0 
-      ? `(${relevanceCases.join(' + ')}) as relevance_score` 
+    const relevanceSelect = relevanceCases.length > 0
+      ? `(${relevanceCases.join(' + ')}) as relevance_score`
       : '0 as relevance_score';
 
     // Count
     let countQuery = `SELECT COUNT(DISTINCT p.id) as total FROM parts p ${finalWhereClause}`;
     let countParams = [...finalWhereParams];
-    
-    // Nếu có tính điểm relevance, ta dùng HAVING để loại bỏ các kết quả quá ít liên quan (điểm < 2)
-    const havingClause = relevanceCases.length > 0 ? `HAVING relevance_score >= 2` : '';
+
+    // Nếu có tính điểm relevance, ta dùng HAVING để loại bỏ các kết quả quá ít liên quan (điểm = 0)
+    const havingClause = relevanceCases.length > 0 ? `HAVING relevance_score > 0` : '';
 
     if (havingClause) {
       // Để dùng HAVING với COUNT, ta phải bọc vào subquery
@@ -246,7 +246,7 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
         ) as subquery
       `;
       // Score params need to be before finalWhereParams in the subquery
-      countParams = [...scoreParams, ...finalWhereParams];
+      countParams = [...scoreParams, ...finalWhereParams, ...scoreParams];
     }
 
     const [countResult] = await db.query(countQuery, countParams);
