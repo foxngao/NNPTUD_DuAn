@@ -152,6 +152,35 @@ INSERT IGNORE INTO part_compatibility (part_id, model_year_id) VALUES
 (13, 1), (13, 2), (13, 3), (13, 6), (13, 7),
 (14, 6), (14, 7);
 
+-- ========== VIN WMI MAPPINGS ==========
+INSERT IGNORE INTO vin_wmi_mappings (wmi_code, brand_id, country) VALUES
+-- Toyota (brand_id = 1)
+('JT1', 1, 'Japan'), ('JT2', 1, 'Japan'), ('JT3', 1, 'Japan'), ('JT4', 1, 'Japan'), ('JT5', 1, 'Japan'),
+('JT6', 1, 'Japan'), ('JT7', 1, 'Japan'), ('JT8', 1, 'Japan'), ('JTD', 1, 'Japan'), ('JTE', 1, 'Japan'),
+('JTK', 1, 'Japan'), ('JTN', 1, 'Japan'), ('JTL', 1, 'Japan'), ('JTM', 1, 'Japan'),
+('1NX', 1, 'USA'), ('2T1', 1, 'Canada'), ('4T1', 1, 'USA'), ('5TD', 1, 'USA'),
+('MR0', 1, 'Vietnam'), ('RL4', 1, 'Vietnam'),
+-- Honda (brand_id = 2)
+('JHM', 2, 'Japan'), ('JHL', 2, 'Japan'), ('JHG', 2, 'Japan'),
+('1HG', 2, 'USA'), ('2HG', 2, 'Canada'), ('5FN', 2, 'USA'),
+('SHH', 2, 'UK'), ('RLH', 2, 'Vietnam'),
+-- Ford (brand_id = 3)
+('1FA', 3, 'USA'), ('1FB', 3, 'USA'), ('1FC', 3, 'USA'), ('1FD', 3, 'USA'), ('1FM', 3, 'USA'),
+('1FT', 3, 'USA'), ('2FA', 3, 'Canada'), ('3FA', 3, 'Mexico'),
+-- Hyundai (brand_id = 4)
+('KMH', 4, 'South Korea'), ('KMJ', 4, 'South Korea'), ('5NP', 4, 'USA'),
+('MAL', 4, 'India'), ('TMA', 4, 'Czech Republic'),
+-- Mercedes-Benz (brand_id = 5)
+('WDB', 5, 'Germany'), ('WDC', 5, 'Germany'), ('WDD', 5, 'Germany'),
+('4JG', 5, 'USA'), ('55S', 5, 'USA'),
+-- BMW (brand_id = 6)
+('WBA', 6, 'Germany'), ('WBS', 6, 'Germany'), ('WBY', 6, 'Germany'),
+('5UX', 6, 'USA'), ('5YM', 6, 'USA'),
+-- Mazda (brand_id = 7)
+('JM1', 7, 'Japan'), ('JM3', 7, 'Japan'), ('JM6', 7, 'Japan'), ('JM7', 7, 'Japan'),
+-- Kia (brand_id = 8)
+('KNA', 8, 'South Korea'), ('KND', 8, 'South Korea'), ('5XX', 8, 'USA');
+
 -- ========== PART SPECIFICATIONS ==========
 INSERT IGNORE INTO part_specifications (part_id, spec_name, spec_value, spec_unit) VALUES
 -- Lọc dầu động cơ Toyota (part_id = 1)
@@ -271,4 +300,5 @@ INSERT IGNORE INTO part_reviews (part_id, user_id, rating, comment) VALUES
 (10, 1, 3, N'Gương chất lượng ổn nhưng kính hơi mỏng.'),
 (12, 1, 5, N'Giảm xóc KYB cực kỳ êm ái, đáng tiền.'),
 (13, 1, 4, N'Cao su chân máy chống rung tốt.'),
-(14, 1, 4, N'Rotuyn chính hãng, lắp vừa chuẩn.');
+
+

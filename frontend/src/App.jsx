@@ -23,6 +23,7 @@ import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
 import OrderDetail from './pages/OrderDetail';
 import Profile from './pages/Profile';
+import SearchHistory from './pages/SearchHistory';
 
 // Admin pages
 import AdminLayout from './pages/Admin/AdminLayout';
@@ -113,6 +114,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/search-history"
+            element={
+              <ProtectedRoute>
+                <SearchHistory />
               </ProtectedRoute>
             }
           />
