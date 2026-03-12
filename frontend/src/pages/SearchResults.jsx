@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ProductCard from '../components/common/ProductCard';
@@ -6,7 +6,7 @@ import VinSearch from '../components/Filters/VinSearch';
 import ImageSearch from '../components/Filters/ImageSearch';
 import productApi from '../api/productApi';
 import searchHistoryApi from '../api/searchHistoryApi';
-import { Search, Filter, X, SlidersHorizontal, Hash, Camera, Tag, Car, Calendar, DollarSign, ArrowUpDown } from 'lucide-react';
+import { Search, Filter, X, SlidersHorizontal, Hash, Camera, Tag, Car, Calendar, DollarSign, ArrowUpDown, Clock } from 'lucide-react';
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -47,6 +47,42 @@ const SearchResults = () => {
   const [imageLoading, setImageLoading] = useState(false);
 
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Recent searches state
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [showRecentSearches, setShowRecentSearches] = useState(false);
+  const searchInputRef = useRef(null);
+
+  // Outside click handler for recent searches dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchInputRef.current && !searchInputRef.current.contains(event.target)) {
+        setShowRecentSearches(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const fetchRecentSearches = async () => {
+    if (!isAuthenticated) return;
+    try {
+      const res = await searchHistoryApi.getHistory({ search_type: 'keyword', limit: 5 });
+      setRecentSearches(res.data.data);
+    } catch (error) {
+      console.error('Failed to fetch recent searches', error);
+    }
+  };
+
+  const handleInputFocus = () => {
+    setShowRecentSearches(true);
+    fetchRecentSearches();
+  };
+
+  const handleRecentSearchSelect = (query) => {
+    handleFilterChange('keyword', query);
+    setShowRecentSearches(false);
+  };
 
   useEffect(() => {
     fetchCategories();
@@ -248,15 +284,36 @@ const SearchResults = () => {
 
               {/* Basic Filters */}
               <div className="grid md:grid-cols-3 gap-4">
-                <div className="relative">
+                <div className="relative" ref={searchInputRef}>
                   <Search className="absolute left-4 top-3.5 text-slate-400" size={20} />
                   <input
                     type="text"
                     placeholder="Tìm kiếm sản phẩm..."
                     value={filters.keyword}
                     onChange={(e) => handleFilterChange('keyword', e.target.value)}
+                    onFocus={handleInputFocus}
                     className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                  {/* Recent Searches Dropdown */}
+                  {showRecentSearches && recentSearches.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 shadow-xl rounded-xl z-50 overflow-hidden">
+                      <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center">
+                        <span className="text-xs font-bold text-slate-500 uppercase">Tìm kiếm gần đây</span>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {recentSearches.map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => handleRecentSearchSelect(item.query)}
+                            className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 transition-colors border-b border-slate-50 last:border-0"
+                          >
+                            <Clock size={16} className="text-slate-400" />
+                            <span className="text-slate-700 font-medium truncate">{item.query}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="relative">

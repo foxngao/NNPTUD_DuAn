@@ -147,9 +147,6 @@ CREATE TABLE IF NOT EXISTS order_items (
   price_at_purchase DECIMAL(12, 2) NOT NULL,
   FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
   FOREIGN KEY (part_id) REFERENCES parts(id) ON DELETE CASCADE
-<<<<<<< HEAD
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-=======
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng ánh xạ VIN prefix → brand (WMI: 3 ký tự đầu)
@@ -173,4 +170,3 @@ CREATE TABLE search_history (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_user_created (user_id, created_at)
 );
->>>>>>> 9026a3f249b50e1b7f82b17f5da0d47cfd69ec9f
