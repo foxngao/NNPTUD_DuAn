@@ -61,7 +61,6 @@ const searchByImage = async (req, res) => {
 
     let imageUrl = null;
     let aiKeywords = '';
-    let matchedProductIds = [];
 
     if (req.file) {
       const baseUrl = `${req.protocol}://${req.get('host')}`;
@@ -82,23 +81,11 @@ const searchByImage = async (req, res) => {
             }
           ];
 
-          // Lấy nhanh danh sách ID và Tên sản phẩm hiện có
-          const [allParts] = await db.query('SELECT id, name FROM parts');
-          let partsListText = allParts.map(p => `ID: ${p.id} - ${p.name}`).join('\n');
-
-          // Đề phòng danh sách quá dài gây lỗi API, giới hạn số lượng ký tự (~ 500 parts)
-          if (partsListText.length > 25000) {
-            partsListText = partsListText.substring(0, 25000) + '\n...';
-          }
-
           const prompt = `Bạn là một chuyên gia về phụ tùng ô tô. 
-Nhiệm vụ 1: Nhận dạng phụ tùng ô tô trong ảnh và trả về một vài từ khóa ngắn gọn, cách nhau bằng dấu phẩy.
-Nhiệm vụ 2: Dựa vào hình ảnh, hãy tìm trong danh sách các sản phẩm đang có sẵn dưới đây xem có sản phẩm nào CÙNG LOẠI HOẶC CHÍNH XÁC là sản phẩm trong ảnh không.
-Danh sách sản phẩm:
-${partsListText}
+Nhiệm vụ: Nhận dạng phụ tùng ô tô trong ảnh và trả về một vài từ khóa tiếng Việt ngắn gọn, cách nhau bằng dấu phẩy mô tả loại phụ tùng hoặc thương hiệu trong ảnh (ví dụ: lốp xe, đèn pha, gương chiếu hậu, mâm đúc, tay nắm cửa, Toyota, Michelin...).
 
-Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json) theo đúng định dạng sau:
-{"keywords": "từ khóa 1, từ khóa 2", "matched_ids": [id1, id2]}`;
+Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json) theo đúng định dạng sau (chỉ bao gồm các từ khóa bạn nhận diện được):
+{"keywords": "từ khóa 1, từ khóa 2"}`;
 
           const result = await model.generateContent([prompt, ...imageParts]);
           const responseText = await result.response.text();
@@ -109,9 +96,6 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
             const aiData = JSON.parse(cleanJsonText);
 
             aiKeywords = aiData.keywords || '';
-            if (Array.isArray(aiData.matched_ids)) {
-              matchedProductIds = aiData.matched_ids.map(id => parseInt(id)).filter(id => !isNaN(id));
-            }
           } catch (parseError) {
             console.error('Failed to parse Gemini JSON output:', parseError);
             console.log('Raw output was:', responseText);
@@ -120,7 +104,6 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
           }
 
           console.log('AI detected keywords:', aiKeywords);
-          console.log('AI matched IDs:', matchedProductIds);
 
           // Gộp từ khóa AI nhận diện được vào mô tả của user
           description = `${description} ${aiKeywords}`.trim();
@@ -165,36 +148,43 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
     }
 
     // 2. AI keywords matching
+    // Giữ nguyên các cụm từ cách nhau bằng dấu phẩy thay vì split theo từng chữ
     if (description.trim()) {
-      const cleanDesc = description.replace(/[.,;:]/g, ' ');
-      const keywords = cleanDesc.trim().split(/\s+/).filter(k => k.length >= 2);
+      // Split by comma to keep phrases intact (e.g., "Động cơ", "hộp số")
+      const phrases = description.split(',').map(p => p.trim()).filter(p => p.length >= 2);
 
-      if (keywords.length > 0) {
-        keywords.forEach(() => {
+      if (phrases.length > 0) {
+        phrases.forEach(() => {
           searchConditions.push('(p.name LIKE ? OR p.description LIKE ?)');
         });
 
-        keywords.forEach(kw => {
-          whereParams.push(`%${kw}%`, `%${kw}%`);
+        phrases.forEach(phrase => {
+          whereParams.push(`%${phrase}%`, `%${phrase}%`);
 
-          relevanceCases.push('(CASE WHEN p.name LIKE ? THEN 2 ELSE 0 END) + (CASE WHEN p.description LIKE ? THEN 1 ELSE 0 END)');
-          scoreParams.push(`%${kw}%`, `%${kw}%`);
+          // Increased relevance score for exact phrase match
+          relevanceCases.push('(CASE WHEN p.name LIKE ? THEN 10 ELSE 0 END) + (CASE WHEN p.description LIKE ? THEN 3 ELSE 0 END)');
+          scoreParams.push(`%${phrase}%`, `%${phrase}%`);
         });
+      }
+      
+      // Khai thác thêm cách cắt chữ rời rạc để tăng độ phủ (nếu không tìm thấy phrase)
+      const words = description.replace(/[.,;:]/g, ' ').split(/\s+/).filter(w => w.length >= 2);
+      if (words.length > 0) {
+          words.forEach(() => {
+            searchConditions.push('(p.name LIKE ? OR p.description LIKE ?)');
+          });
+
+          words.forEach(word => {
+            whereParams.push(`%${word}%`, `%${word}%`);
+
+            // Lower relevance score for partial word match
+            relevanceCases.push('(CASE WHEN p.name LIKE ? THEN 2 ELSE 0 END) + (CASE WHEN p.description LIKE ? THEN 1 ELSE 0 END)');
+            scoreParams.push(`%${word}%`, `%${word}%`);
+          });
       }
     }
 
-    // 3. AI Exact Matched IDs
-    if (matchedProductIds.length > 0) {
-      // Create a condition for matching the ID
-      const idPlaceholders = matchedProductIds.map(() => '?').join(',');
-
-      // Nếu có ID khớp chính xác, TẮT việc tìm kiếm bằng keyword để loại bỏ các sản phẩm không liên quan
-      searchConditions = [`(p.id IN (${idPlaceholders}))`];
-      whereParams = [...matchedProductIds];
-
-      relevanceCases = [`(CASE WHEN p.id IN (${idPlaceholders}) THEN 1000 ELSE 0 END)`];
-      scoreParams = [...matchedProductIds];
-    }
+    // Đã bỏ logic AI Exact Matched IDs
 
     // Nếu cả ảnh lẫn AI đều ko lấy được thông tin gì 
     if (searchConditions.length === 0) {
@@ -224,6 +214,11 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
 
     const finalWhereClause = `WHERE ${finalWhere.join(' AND ')}`;
 
+    // Tăng điểm chuẩn để lọc kết quả rác.
+    // VD: cụm từ chính xác (10đ), từ đơn lẻ (2đ).
+    // Nếu chỉ có kết quả từ đơn (score <= 5) -> có khả năng là kết quả rác (VD: chỉ chung chữ "Toyota").
+    // Ta đặt threshold = 5 để loại bỏ các kết quả chỉ trùng 1-2 từ đơn lẻ vụn vặt.
+    // Ngoại lệ: Nếu mảng parts chỉ có 2-3 phần tử, tìm bằng file name được 100/50 điểm -> OK
     const relevanceSelect = relevanceCases.length > 0
       ? `(${relevanceCases.join(' + ')}) as relevance_score`
       : '0 as relevance_score';
@@ -232,8 +227,8 @@ Luôn trả về kết quả dưới dạng JSON (không dùng block \`\`\`json)
     let countQuery = `SELECT COUNT(DISTINCT p.id) as total FROM parts p ${finalWhereClause}`;
     let countParams = [...finalWhereParams];
 
-    // Nếu có tính điểm relevance, ta dùng HAVING để loại bỏ các kết quả quá ít liên quan (điểm = 0)
-    const havingClause = relevanceCases.length > 0 ? `HAVING relevance_score > 0` : '';
+    // Lọc cực kỳ nghiêm ngặt: Phải đạt ít nhất 5 điểm (trùng 1 cụm từ chính xác, hoặc trùng rất nhiều từ đơn) mới được hiển thị
+    const havingClause = relevanceCases.length > 0 ? `HAVING relevance_score >= 5` : '';
 
     if (havingClause) {
       // Để dùng HAVING với COUNT, ta phải bọc vào subquery
